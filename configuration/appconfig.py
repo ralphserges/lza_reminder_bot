@@ -10,8 +10,9 @@ class AppConfig:
         self.bot_api_key = all_configs.get('telegram_api_bot_key')
         self.tele_api_id = all_configs.get('telegram_api_id')
         self.tele_api_hash = all_configs.get('telegram_api_hash')
+        self.authorized_users = all_configs.get('authorized_users')
     
-    def get_all_configs(self, config_filepath): 
+    def get_all_configs(self, config_filepath:str): 
         with open(config_filepath) as config_file:
             all_configs = yaml.load(config_file, Loader=SafeLoader)
             return all_configs
