@@ -1,19 +1,12 @@
-from telethon import TelegramClient, events
-from pathlib import Path
-from configuration.appconfig import AppConfig
-from validation.user_authorization_validator import UserAuthorizationValidator
-from formatter.response_provider import ResponseProvider
+import re
+from bot_starter_pack import BotStarterPack, events
+from exceptions import IncompleteNewReminderFieldsError, DateIsPastError, TimeForTodayIsPastError
 
-appconfig = AppConfig()
-BOT_TOKEN = appconfig.bot_api_key
-TELE_API_ID = appconfig.tele_api_id
-TELE_API_HASH = appconfig.tele_api_hash
-
-AUTHORIZED_USER = appconfig.authorized_users
-user_authorization_validator = UserAuthorizationValidator(authorized_users_list=AUTHORIZED_USER)
-response_provider = ResponseProvider()
-
-bot = TelegramClient(session='sessions/', api_id=TELE_API_ID, api_hash=TELE_API_HASH).start(bot_token=BOT_TOKEN)
+bot_starter_pack = BotStarterPack()
+response_provider = bot_starter_pack.response_provider
+user_authorization_validator = bot_starter_pack.user_validator
+user_input_validator = bot_starter_pack.user_input_validator
+bot = bot_starter_pack.telegram_bot
 
 @bot.on(events.NewMessage(pattern='/start'))
 async def start(event):
@@ -25,22 +18,34 @@ async def start(event):
         await event.respond(response_provider.welcome_response(username=sender_username),parse_mode='HTML')
 
 @bot.on(events.NewMessage(pattern='/add'))
-async def start(event):
+async def add_instruction(event):
     sender = await event.get_sender()
     sender_username = sender.username
     if not user_authorization_validator.is_user_authorized(username=sender_username):  
         await event.respond(response_provider.access_denied_response())
     else:
-        await event.respond(response_provider.add_reminder_template_response(),parse_mode='HTML')
+        await event.respond(response_provider.add_reminder_instruction())
 
-@bot.on(events.NewMessage(pattern='[aA]dd_reminder*'))
+@bot.on(events.NewMessage(pattern=re.compile(r'add_reminder', re.IGNORECASE)))
 async def add_reminder(event):
     sender = await event.get_sender()
     sender_username = sender.username
     if not user_authorization_validator.is_user_authorized(username=sender_username):  
         await event.respond(response_provider.access_denied_response())
     else:
-        await event.respond(response_provider.add_reminder_template_response(),parse_mode='HTML')
+        user_input = event.message.message
+        try:
+            user_input_validator.validate_new_reminder_input(user_input)
+        except IncompleteNewReminderFieldsError as incomplete_input_err:
+            print(incomplete_input_err.err_msg)
+        except ValueError as wrong_datetime_format_err:
+            print('Date/Time format is wrong. Correct Date Format(YYYY-MM-DD). Correct Time Format(HHMM)')
+        except DateIsPastError as date_is_past_err:
+            print(date_is_past_err.err_msg)
+        except TimeForTodayIsPastError as time_past_err:
+            print(time_past_err.err_msg)
+        
+        
 
 def start_bot():
     bot.run_until_disconnected()
