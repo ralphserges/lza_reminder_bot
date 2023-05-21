@@ -17,14 +17,14 @@ class ResponseProvider:
         'add_reminder\n'\
         'reminder_name\n'\
         'date_trigger(yyyy-mm-dd)\n'\
-        '[time_trigger](military time)\n'\
+        'time_trigger(military time)\n'\
         'to_recur(true/false)\n'\
         'description\n\n'\
         '<strong><u>Example</u></strong>\n'\
         'add_reminder\n'\
         'my mother birthday\n'\
         '2023-05-15\n'\
-        '[1500,2000]\n'\
+        '1500\n'\
         'true\n'\
         'rmb to buy bird nest for her'
         

@@ -1,9 +1,10 @@
 import unittest
-from testsuite.test_validators import TestUserAuthorizationValidator
+from testsuite.test_validators import TestUserAuthorizationValidator,TestUserInputValidator
 
 def suite():
     test_suite = unittest.TestSuite()
     test_suite.addTest(unittest.makeSuite(TestUserAuthorizationValidator))
+    test_suite.addTest(unittest.makeSuite(TestUserInputValidator))
 
     return test_suite
 
